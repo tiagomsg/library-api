@@ -1,0 +1,43 @@
+{
+  "name": "and-library-api",
+  "version": "0.0.1",
+  "description": "REST API for and-library",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint --ext js ./src",
+    "lint-fix": "yarn lint --fix",
+    "precommit": "lint-staged && yarn lint",
+    "prepush": "yarn np && yarn integration-test "
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "keywords": [
+    "AND",
+    "Digital"
+  ],
+  "author": "tiagomsg",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "debug": "^3.1.0",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.2",
+    "mongodb": "^2.2.16",
+    "mongoose": "^5.0.1",
+    "slug": "^0.9.1",
+    "winston": "^2.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.16.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "husky": "^0.14.3",
+    "jest": "^22.4.2",
+    "lint-staged": "^7.0.0",
+    "nodemon": "^1.14.11"
+  }
+}

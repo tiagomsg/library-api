@@ -1,0 +1,36 @@
+{
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "extends": "airbnb-base",
+  "globals": {
+    "expect": true
+  },
+  "rules": {
+    "no-console": ["error", { "allow": ["warn", "error", "log"] }],
+    "no-underscore-dangle": ["error", { "allow": ["_id"] }],
+    "comma-dangle": [2, {
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline",
+      "functions": "ignore"
+    }],
+    "max-len":  ["error", {
+      "code": 100,
+      "ignoreTemplateLiterals": true,
+      "ignorePattern": "^\\s*const\\s.+=\\s*require\\s*\\(",
+      "ignoreRegExpLiterals": true,
+      "ignoreStrings": true
+    }],
+    "prefer-destructuring": ["error", {"object": false, "array": false}],
+    "prefer-promise-reject-errors": [
+      "off",
+      {
+        "allowEmptyReject": true
+      }
+    ],
+    "semi": ["error", "never"]
+  }
+}
