@@ -11,11 +11,12 @@ Pet project for introduction to Node and its ecosystem.
 ## Run
 ### Development
 
-`yarn run dev`
+`yarn start`
 
 ### Unit Tests
 
-* `jest --watch` - live testing
+* `yarn test` - runs all tests
+* `yarn test-watch` - runs all tests in watch mode
 * `jest src/app/models` - runs all tests under models 
 
 ## Libraries
@@ -24,15 +25,3 @@ Pet project for introduction to Node and its ecosystem.
 * <a href="https://www.npmjs.com/package/winston">Winston</a> - For logging
 * <a href="https://www.npmjs.com/package/dotenv">Dotenv</a> - For environment variables support
 * <a href="https://github.com/alonronin/mockingoose">Mockingoose</a> - Mocking Mongoose Models
-
-
-
-Tasks
-
-1. Book Controller unit test
-2. Slug unit test
-3. Errors unit tests
-4. Routes unit test
-5. Get all books integration test
-6. Commit
-

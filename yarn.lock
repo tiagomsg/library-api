@@ -3029,6 +3029,10 @@ mixin-deep@^1.2.0:
   dependencies:
     minimist "0.0.8"
 
+mockingoose@^2.9.1:
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/mockingoose/-/mockingoose-2.9.1.tgz#bea36e930fc65d1be96a0e5d015a9d408cb3d98d"
+
 mongodb-core@2.1.19:
   version "2.1.19"
   resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-2.1.19.tgz#00fbd5e5a3573763b9171cfd844e60a8f2a3a18b"

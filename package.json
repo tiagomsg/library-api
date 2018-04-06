@@ -6,6 +6,8 @@
   "scripts": {
     "lint": "eslint --ext js ./src",
     "lint-fix": "yarn lint --fix",
+    "test": "jest",
+    "test-watch": "jest --watch",
     "precommit": "lint-staged && yarn lint"
   },
   "lint-staged": {
@@ -37,7 +39,7 @@
     "husky": "^0.14.3",
     "jest": "^22.4.2",
     "lint-staged": "^7.0.0",
-    "mockingoose": "^2.8.2",
+    "mockingoose": "^2.9.1",
     "nodemon": "^1.14.11"
   }
 }
