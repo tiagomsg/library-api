@@ -1,3 +1,7 @@
+/* eslint no-param-reassign:
+ ["error",{ "props": true, "ignorePropertyModificationsFor": ["ret"] }]
+ */
+/* eslint no-underscore-dangle: "off" */
 const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
@@ -15,7 +19,15 @@ const BookSchema = new Schema(
     imagePath: String,
     externalLink: String,
   },
-  { setDefaultsOnInsert: true },
+  {
+    setDefaultsOnInsert: true,
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.__v
+        return ret
+      },
+    },
+  },
 )
 
 let BookModel = {}

@@ -1,6 +1,7 @@
 jest.mock('./books/')
 jest.mock('../errors/errorHandler')
 jest.mock('body-parser')
+jest.mock('cors')
 
 const booksRouter = require('./books/')
 const errorHandler = require('../errors/errorHandler')
@@ -38,7 +39,8 @@ describe('Routes', () => {
       expect(urlencodedMock)
         .toHaveBeenCalledWith({ extended: true })
       expect(useMock)
-        .toHaveBeenCalledTimes(3)
+        .toHaveBeenCalledTimes(4)
+      // TODO: test cors configuration
       expect(useMock)
         .toHaveBeenCalledWith(urlencodedResult)
       expect(useMock)

@@ -115,4 +115,16 @@ describe('Book Model', () => {
         .toBe('string')
     })
   })
+
+  describe('toJSON transform', () => {
+    test('removes versionKey property', () => {
+      const testObject = {
+        __v: 1,
+        testProperty: 'sample value',
+      }
+
+      expect(BookModel.schema.options.toJSON.transform({}, testObject))
+        .toEqual({ testProperty: 'sample value' })
+    })
+  })
 })
