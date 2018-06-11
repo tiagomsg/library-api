@@ -12,6 +12,7 @@ const BookSchema = new Schema(
     title: {
       type: String,
       required: true,
+      index: { unique: true },
     },
     slug: { type: String },
     description: String,

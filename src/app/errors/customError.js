@@ -1,6 +1,6 @@
 const ErrorTypes = require('./errorTypes')
 
-class Error {
+class CustomError {
   constructor(error) {
     this.error = error
     this.message = error.message
@@ -30,4 +30,4 @@ class Error {
   }
 }
 
-module.exports = Error
+module.exports = CustomError

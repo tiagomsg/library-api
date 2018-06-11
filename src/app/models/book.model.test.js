@@ -29,6 +29,13 @@ describe('Book Model', () => {
       expect(typeof BookModel.schema.paths.title.options.type())
         .toBe('string')
     })
+
+    test('is unique', () => {
+      expect(BookModel.schema.paths.title.options.index)
+        .toBeDefined()
+      expect(BookModel.schema.paths.title.options.index)
+        .toHaveProperty('unique', true)
+    })
   })
 
   describe('Slug', () => {

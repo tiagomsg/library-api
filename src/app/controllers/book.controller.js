@@ -1,6 +1,7 @@
 const Book = require('../models/book.model')
 const logger = require('winston')
 const DatabaseError = require('../errors/database.error')
+const BadRequestError = require('../errors/badRequest.error')
 
 function getAllBooks(req, res, next) {
   logger.debug('Getting all books!')
@@ -15,27 +16,22 @@ function getAllBooks(req, res, next) {
     })
 }
 
-// function createBook(req, res, next) {
-//   if (!req.body) {
-//     return res.sendStatus(500)
-//   }
-//
-//   validateRequest()
-//   const book = new Book(req.body)
-//   return book
-//     .save()
-//     .then(savedBook => res.status(201)
-//       .send(savedBook))
-//     .catch(err => next(err))
-// }
-//
-// function validateCreateBookRequest(book) {
-//   if(!book.title || !book.description || !book.author) {
-//
-//   }
-// }
+function createBook(req, res, next) {
+  if (!req.body) {
+    return next(new BadRequestError('Missing body'))
+  }
+
+  if (!req.body.title) {
+    return next(new BadRequestError('Missing title'))
+  }
+
+  logger.debug(`Creating book: ${req.body.title}`)
+  return Book.create(req.body)
+    .then(book => res.status(201).send(book))
+    .catch(err => next(new DatabaseError(err)))
+}
 
 module.exports = {
   getAllBooks,
-  // createBook
+  createBook,
 }

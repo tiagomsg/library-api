@@ -4,6 +4,7 @@ const mockingoose = require('mockingoose').default
 const Book = require('../models/book.model')
 const BookController = require('./book.controller')
 const DatabaseError = require('../errors/database.error')
+const BadRequestError = require('../errors/badRequest.error')
 
 
 describe('Book Controller', () => {
@@ -115,19 +116,79 @@ describe('Book Controller', () => {
     })
   })
 
-  // describe('createBook', () => {
-  //
-  //   test('exists', () => {
-  //     expect(BookController.createBook)
-  //       .toBeDefined()
-  //   })
-  //   //
-  //   // test('when no body,', () => {
-  //   //   expect(BookController.createBook)
-  //   //     .toBeDefined()
-  //   // })
-  //
-  //
-  // })
+  describe('createBook', () => {
+
+    test('exists', () => {
+      expect(BookController.createBook)
+        .toBeDefined()
+    })
+
+    test('when no body, then call next with bad request error', () => {
+      nextMock = jest.fn()
+
+      BookController.createBook(reqMock, resMock, nextMock)
+
+      expect(nextMock)
+        .toHaveBeenCalledTimes(1)
+      expect(nextMock)
+        .toHaveBeenCalledWith(new BadRequestError('Missing body'))
+    })
+
+    test('when no title, then call next with bad request error', () => {
+      const requestBody = Object.assign({}, book1)
+      delete requestBody.title
+      reqMock.body = requestBody
+      nextMock = jest.fn()
+
+      BookController.createBook(reqMock, resMock, nextMock)
+
+      expect(nextMock)
+        .toHaveBeenCalledTimes(1)
+      expect(nextMock)
+        .toHaveBeenCalledWith(new BadRequestError('Missing title'))
+    })
+
+    test('when valid request, then save book and return 201 with saved book', () => {
+      expect.assertions(4)
+      const requestBody = Object.assign({}, book1)
+      reqMock.body = requestBody
+      resMock.status = jest.fn().mockReturnThis()
+      resMock.send = jest.fn().mockReturnThis()
+      //to make sure save() is called, making it return a different book than the input
+      mockingoose.Book.toReturn(book2, 'save')
+
+      return BookController.createBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(resMock.status)
+            .toHaveBeenCalledTimes(1)
+          expect(resMock.status)
+            .toHaveBeenCalledWith(201)
+          expect(resMock.send)
+            .toHaveBeenCalledTimes(1)
+          expect(resMock.send)
+            .toHaveBeenCalledWith(
+              expect.objectContaining(
+                Object.assign({_id: expect.anything()}, book2)))
+        })
+    })
+
+    test('when error saving, then call next with DatabaseError', () => {
+      const requestBody = Object.assign({}, book1)
+      reqMock.body = requestBody
+      nextMock = jest.fn()
+      const expectedError = new Error('My Error')
+      mockingoose.Book.toReturn(expectedError, 'save');
+
+      return BookController.createBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new DatabaseError(expectedError))
+        })
+    })
+
+  })
 
 })

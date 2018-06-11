@@ -1,7 +1,7 @@
-const Error = require('./error')
+const CustomError = require('./customError')
 const ErrorTypes = require('./errorTypes')
 
-class DatabaseError extends Error {
+class DatabaseError extends CustomError {
   constructor(error) {
     super(error)
     this.httpStatusCode = 502
