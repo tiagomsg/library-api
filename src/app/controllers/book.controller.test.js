@@ -5,6 +5,7 @@ const Book = require('../models/book.model')
 const BookController = require('./book.controller')
 const DatabaseError = require('../errors/database.error')
 const BadRequestError = require('../errors/badRequest.error')
+const ConflictError = require('../errors/conflict.error')
 
 
 describe('Book Controller', () => {
@@ -72,8 +73,8 @@ describe('Book Controller', () => {
           expect(resMock.json)
             .toHaveBeenCalledWith(
               expect.arrayContaining([
-                expect.objectContaining(Object.assign({_id: expect.anything()}, book1))
-              ])
+                expect.objectContaining(Object.assign({ _id: expect.anything() }, book1)),
+              ]),
             )
         })
     })
@@ -92,16 +93,16 @@ describe('Book Controller', () => {
           expect(resMock.json)
             .toHaveBeenCalledWith(
               expect.arrayContaining([
-                expect.objectContaining(Object.assign({_id: expect.anything()}, book1)),
-                expect.objectContaining(Object.assign({_id: expect.anything()}, book2))
-              ])
+                expect.objectContaining(Object.assign({ _id: expect.anything() }, book1)),
+                expect.objectContaining(Object.assign({ _id: expect.anything() }, book2)),
+              ]),
             )
         })
     })
 
     test('when error from mongoose then call next with DatabaseError', () => {
       const expectedError = new Error('My Error')
-      mockingoose.Book.toReturn(expectedError, 'find');
+      mockingoose.Book.toReturn(expectedError, 'find')
       nextMock = jest.fn()
 
       return BookController.getAllBooks(reqMock, resMock, nextMock)
@@ -110,7 +111,7 @@ describe('Book Controller', () => {
             .toHaveBeenCalledTimes(1)
           expect(nextMock)
             .toHaveBeenCalledWith(
-              new DatabaseError(expectedError)
+              new DatabaseError(expectedError),
             )
         })
     })
@@ -152,8 +153,10 @@ describe('Book Controller', () => {
       expect.assertions(4)
       const requestBody = Object.assign({}, book1)
       reqMock.body = requestBody
-      resMock.status = jest.fn().mockReturnThis()
-      resMock.send = jest.fn().mockReturnThis()
+      resMock.status = jest.fn()
+        .mockReturnThis()
+      resMock.send = jest.fn()
+        .mockReturnThis()
       //to make sure save() is called, making it return a different book than the input
       mockingoose.Book.toReturn(book2, 'save')
 
@@ -168,16 +171,35 @@ describe('Book Controller', () => {
           expect(resMock.send)
             .toHaveBeenCalledWith(
               expect.objectContaining(
-                Object.assign({_id: expect.anything()}, book2)))
+                Object.assign({ _id: expect.anything() }, book2)))
         })
     })
+
+    test('when title already exists, then call next with ConflictError with unique field name',
+      () => {
+        const requestBody = Object.assign({}, book1)
+        reqMock.body = requestBody
+        nextMock = jest.fn()
+        const expectedError = new Error('My Error')
+        expectedError.code = 11000 // Mongo error code for duplication
+        mockingoose.Book.toReturn(expectedError, 'save')
+
+        return BookController.createBook(reqMock, resMock, nextMock)
+          .then(() => {
+            expect(nextMock)
+              .toHaveBeenCalledTimes(1)
+            expect(nextMock)
+              .toHaveBeenCalledWith(
+                new ConflictError('title'))
+          })
+      })
 
     test('when error saving, then call next with DatabaseError', () => {
       const requestBody = Object.assign({}, book1)
       reqMock.body = requestBody
       nextMock = jest.fn()
       const expectedError = new Error('My Error')
-      mockingoose.Book.toReturn(expectedError, 'save');
+      mockingoose.Book.toReturn(expectedError, 'save')
 
       return BookController.createBook(reqMock, resMock, nextMock)
         .then(() => {

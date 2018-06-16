@@ -13,6 +13,7 @@ let app = {}
 describe('Routes', () => {
   const urlencodedResult = 'success'
   const urlencodedMock = jest.fn(() => urlencodedResult)
+  const jsonMock = jest.fn()
   const useMock = jest.fn()
   const getMock = jest.fn()
   const allMock = jest.fn()
@@ -27,19 +28,23 @@ describe('Routes', () => {
     getMock.mockClear()
     allMock.mockClear()
     bodyParser.urlencoded = urlencodedMock
+    jsonMock.mockClear()
+    bodyParser.json = jsonMock
     app = appMock
   })
 
   describe('Setup middleware', () => {
-    test('Configures bodyParser, books router, error handling', () => {
+    test('Configures bodyParser, json, books router, error handling', () => {
       routes(app)
 
       expect(urlencodedMock)
         .toHaveBeenCalledTimes(1)
       expect(urlencodedMock)
         .toHaveBeenCalledWith({ extended: true })
+      expect(jsonMock)
+        .toHaveBeenCalledTimes(1)
       expect(useMock)
-        .toHaveBeenCalledTimes(4)
+        .toHaveBeenCalledTimes(5)
       // TODO: test cors configuration
       expect(useMock)
         .toHaveBeenCalledWith(urlencodedResult)

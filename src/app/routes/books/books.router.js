@@ -7,6 +7,7 @@ function createBooksRouter() {
   router
     .route('/')
     .get(BooksController.getAllBooks)
+    .post(BooksController.createBook)
 
   return router
 }

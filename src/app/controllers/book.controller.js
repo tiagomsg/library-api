@@ -2,6 +2,7 @@ const Book = require('../models/book.model')
 const logger = require('winston')
 const DatabaseError = require('../errors/database.error')
 const BadRequestError = require('../errors/badRequest.error')
+const ConflictError = require('../errors/conflict.error')
 
 function getAllBooks(req, res, next) {
   logger.debug('Getting all books!')
@@ -27,8 +28,15 @@ function createBook(req, res, next) {
 
   logger.debug(`Creating book: ${req.body.title}`)
   return Book.create(req.body)
-    .then(book => res.status(201).send(book))
-    .catch(err => next(new DatabaseError(err)))
+    .then(book => res.status(201)
+      .send(book))
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('title'))
+      } else {
+        next(new DatabaseError(err))
+      }
+    })
 }
 
 module.exports = {

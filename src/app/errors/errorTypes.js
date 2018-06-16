@@ -1,7 +1,8 @@
 const ErrorTypes = Object.freeze({
-  GENERIC: Symbol('generic'),
-  CONNECTION: Symbol('connection'),
-  MISSING_FIELD: Symbol('missing_field'),
+  GENERIC: 'generic',
+  CONNECTION: 'connection',
+  MISSING_FIELD: 'missing_field',
+  ALREADY_EXISTS: 'already_exists',
 })
 
 module.exports = ErrorTypes
