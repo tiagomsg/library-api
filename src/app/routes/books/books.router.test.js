@@ -61,4 +61,28 @@ describe('Books Router', () => {
         done()
       })
   })
+
+  test('GET /{id} calls and returns BooksController.findBookById', (done) => {
+    functionMock = jest.fn()
+      .mockImplementation((req, res) => {
+        res.json(expectedResponse)
+      })
+    BooksController.findBookById = functionMock
+
+    app.use('/', BooksRouter())
+
+    request(app)
+      .get('/12345')
+      .expect(200)
+      .expect((response) => {
+        expect(functionMock)
+          .toHaveBeenCalledTimes(1)
+        expect(response.body)
+          .toEqual(expect.objectContaining(expectedResponse))
+      })
+      .end((err) => {
+        if (err) done(err)
+        done()
+      })
+  })
 })

@@ -6,6 +6,7 @@ const BookController = require('./book.controller')
 const DatabaseError = require('../errors/database.error')
 const BadRequestError = require('../errors/badRequest.error')
 const ConflictError = require('../errors/conflict.error')
+const NotFoundError = require('../errors/notFound.error')
 
 
 describe('Book Controller', () => {
@@ -213,4 +214,78 @@ describe('Book Controller', () => {
 
   })
 
+
+  //-------------
+  //-- GetBook --
+  //-------------
+  describe('findBookById', () => {
+
+    test('exists', () => {
+      expect(BookController.findBookById)
+        .toBeDefined()
+    })
+
+    test('when ID not provided, return 400 Bad Request', () => {
+      reqMock.params = {}
+      nextMock = jest.fn()
+
+      BookController.findBookById(reqMock, resMock, nextMock)
+
+      expect(nextMock)
+        .toHaveBeenCalledTimes(1)
+      expect(nextMock)
+        .toHaveBeenCalledWith(
+          new BadRequestError('id'))
+    })
+
+    test('when ID not valid, return 400 Bad Request', () => {
+      reqMock.params = { bookId: 'bookId' }
+      nextMock = jest.fn()
+      mockingoose.Book.toReturn(new Error('CastError: Cast to ObjectId'), 'findOne')
+
+
+      return BookController.findBookById(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new BadRequestError('ID provided is not valid'))
+        })
+    })
+
+    test('when book exists, then returns JSON with book', () => {
+      reqMock.params = { bookId: 'bookId' }
+      mockingoose.Book.toReturn(book1, 'findOne')
+      resMock.json = jest.fn()
+        .mockImplementation((book) => book)
+
+      return BookController.findBookById(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(resMock.json)
+            .toHaveBeenCalledTimes(1)
+          expect(resMock.json)
+            .toHaveBeenCalledWith(
+              expect.objectContaining(
+                Object.assign({ _id: expect.anything() }, book1)),
+            )
+        })
+    })
+
+    test('when book does not exist, return 404 Not Found', () => {
+      reqMock.params = { bookId: 'bookId' }
+      nextMock = jest.fn()
+      mockingoose.Book.toReturn(undefined, 'findOne')
+
+      return BookController.findBookById(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new NotFoundError('bookId'),
+            )
+        })
+    })
+  })
 })

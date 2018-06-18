@@ -59,7 +59,7 @@ describe('/books', () => {
         })
     ))
 
-    test('Get all books does not expose internal properties (ie. mongoose versionKey', done => (
+    test('Get all books does not expose internal properties (ie. mongoose versionKey)', done => (
       request(app)
         .get('/books')
         .expect('Content-Type', /json/)
@@ -124,6 +124,71 @@ describe('/books', () => {
                 },
               }))
         })
+        .end((err) => {
+          if (err) done(err)
+          done()
+        })
+    ))
+  })
+
+  describe('GET by ID', () => {
+    const testBook = {
+      title: 'Book 4 Title',
+      slug: 'slugexample4',
+      description: 'Description of the book 4',
+      author: 'Author of the book 4',
+      imagePath: 'Image Path 4',
+      externalLink: 'Image URL 4',
+    }
+    let testBookId
+
+    beforeEach((done) => {
+      request(app)
+        .post('/books')
+        .send(testBook)
+        .set('Accept', 'application/json')
+        .expect((response) => {
+          testBookId = response.body._id
+        })
+        .end((err) => {
+          if (err) done(err)
+          done()
+        })
+    })
+
+    test('Get book by id', (done) => {
+      request(app)
+        .get(`/books/${testBookId}`)
+        .expect('Content-Type', /json/)
+        .expect('Content-Length', '209')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body)
+            .toEqual(expect
+              .objectContaining(Object.assign({ _id: testBookId }, testBook)))
+        })
+        .end((err) => {
+          if (err) done(err)
+          done()
+        })
+    })
+
+    test('When book not found return 404', done => (
+      request(app)
+        .get('/books/5b269336ca2a86068a5a27cf')
+        .expect('Content-Type', /json/)
+        .expect(404)
+        .end((err) => {
+          if (err) done(err)
+          done()
+        })
+    ))
+
+    test('When ID not valid return 400', done => (
+      request(app)
+        .get('/books/fakeid')
+        .expect('Content-Type', /json/)
+        .expect(400)
         .end((err) => {
           if (err) done(err)
           done()

@@ -3,6 +3,7 @@ const logger = require('winston')
 const DatabaseError = require('../errors/database.error')
 const BadRequestError = require('../errors/badRequest.error')
 const ConflictError = require('../errors/conflict.error')
+const NotFoundError = require('../errors/notFound.error')
 
 function getAllBooks(req, res, next) {
   logger.debug('Getting all books!')
@@ -39,7 +40,27 @@ function createBook(req, res, next) {
     })
 }
 
+function findBookById(req, res, next) {
+  if (!req.params || !req.params.bookId) {
+    return next(new BadRequestError('id'))
+  }
+
+  logger.debug(`Getting book: ${req.params.bookId}`)
+  return Book.findById(req.params.bookId)
+    .then((book) => {
+      if (!book) {
+        return next(new NotFoundError(req.params.bookId))
+      }
+      return res.json(book)
+    })
+    .catch(() => {
+      // TODO: check if the error is really due to ID not being valid
+      next(new BadRequestError('ID provided is not valid'))
+    })
+}
+
 module.exports = {
   getAllBooks,
   createBook,
+  findBookById,
 }

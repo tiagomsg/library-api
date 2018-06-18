@@ -9,6 +9,10 @@ function createBooksRouter() {
     .get(BooksController.getAllBooks)
     .post(BooksController.createBook)
 
+  router
+    .route('/:bookId')
+    .get(BooksController.findBookById)
+
   return router
 }
 
