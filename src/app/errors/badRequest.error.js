@@ -8,6 +8,12 @@ class BadRequestError extends CustomError {
     this.type = ErrorTypes.MISSING_FIELD
   }
 
+  invalidId() {
+    this.httpStatusCode = 400
+    this.type = ErrorTypes.INVALID_ID
+    return this
+  }
+
   getMessage() {
     return `Request error: ${this.message}`
   }

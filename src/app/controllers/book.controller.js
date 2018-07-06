@@ -53,9 +53,47 @@ function findBookById(req, res, next) {
       }
       return res.json(book)
     })
-    .catch(() => {
-      // TODO: check if the error is really due to ID not being valid
-      next(new BadRequestError('ID provided is not valid'))
+    .catch((err) => {
+      if (err.message.includes('Cast to ObjectId failed')) {
+        next(new BadRequestError('ID provided is not valid').invalidId())
+      } else {
+        next(new DatabaseError(err))
+      }
+    })
+}
+
+function updateBook(req, res, next) {
+  if (!req.body) {
+    return next(new BadRequestError('Missing body'))
+  }
+
+  if ('_id' in req.body && req.body._id !== req.params.bookId) {
+    return next(new BadRequestError('IDs not matching'))
+  }
+
+  if ('title' in req.body && req.body.title === '') {
+    return next(new BadRequestError('Title must be filled'))
+  }
+
+  logger.debug(`Updating book: ${req.body.title}`)
+  // TODO: How to unit test options?
+  return Book.findByIdAndUpdate(req.params.bookId, req.body, Object.assign({ new: true }))
+    .then((book) => {
+      if (book) {
+        res.status(200)
+          .json(book)
+      } else {
+        next(new NotFoundError(req.params.bookId))
+      }
+    })
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('title'))
+      } else if (err.message.includes('Cast to ObjectId failed')) {
+        next(new BadRequestError('ID provided is not valid').invalidId())
+      } else {
+        next(new DatabaseError(err))
+      }
     })
 }
 
@@ -63,4 +101,5 @@ module.exports = {
   getAllBooks,
   createBook,
   findBookById,
+  updateBook,
 }

@@ -39,6 +39,10 @@ describe('Book Controller', () => {
     nextMock = {}
   })
 
+
+  //-----------------
+  //-- GetAllBooks --
+  //-----------------
   describe('getAllBooks', () => {
 
     test('exists', () => {
@@ -118,6 +122,9 @@ describe('Book Controller', () => {
     })
   })
 
+  //----------------
+  //-- CreateBook --
+  //----------------
   describe('createBook', () => {
 
     test('exists', () => {
@@ -211,13 +218,12 @@ describe('Book Controller', () => {
               new DatabaseError(expectedError))
         })
     })
-
   })
 
 
-  //-------------
-  //-- GetBook --
-  //-------------
+  //------------------
+  //-- FindBookById --
+  //------------------
   describe('findBookById', () => {
 
     test('exists', () => {
@@ -241,8 +247,8 @@ describe('Book Controller', () => {
     test('when ID not valid, return 400 Bad Request', () => {
       reqMock.params = { bookId: 'bookId' }
       nextMock = jest.fn()
-      mockingoose.Book.toReturn(new Error('CastError: Cast to ObjectId'), 'findOne')
-
+      const expectedError = new Error('bla bla Cast to ObjectId failed bla bla')
+      mockingoose.Book.toReturn(expectedError, 'findOne')
 
       return BookController.findBookById(reqMock, resMock, nextMock)
         .then(() => {
@@ -250,7 +256,7 @@ describe('Book Controller', () => {
             .toHaveBeenCalledTimes(1)
           expect(nextMock)
             .toHaveBeenCalledWith(
-              new BadRequestError('ID provided is not valid'))
+              new BadRequestError('ID provided is not valid').invalidId())
         })
     })
 
@@ -285,6 +291,208 @@ describe('Book Controller', () => {
             .toHaveBeenCalledWith(
               new NotFoundError('bookId'),
             )
+        })
+    })
+
+    test('when database error, return 400 Database Error', () => {
+      reqMock.params = { bookId: 'bookId' }
+      nextMock = jest.fn()
+      const expectedError = new Error('Generic Database error')
+      mockingoose.Book.toReturn(expectedError, 'findOne')
+
+      return BookController.findBookById(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new DatabaseError(expectedError),
+            )
+        })
+    })
+  })
+
+  //----------------
+  //-- UpdateBook --
+  //----------------
+  describe('updateBook', () => {
+
+    test('exists', () => {
+      expect(BookController.updateBook)
+        .toBeDefined()
+    })
+
+    test('when no body, then call next with bad request error', () => {
+      nextMock = jest.fn()
+
+      BookController.updateBook(reqMock, resMock, nextMock)
+
+      expect(nextMock)
+        .toHaveBeenCalledTimes(1)
+      expect(nextMock)
+        .toHaveBeenCalledWith(new BadRequestError('Missing body'))
+    })
+
+    test('when object ID does not match the params ID, then call next with bad request error', () => {
+      const requestBody = Object.assign({ _id: 'bodyID' }, book1)
+      const params = { bookId: 'urlID' }
+      reqMock.body = requestBody
+      reqMock.params = params
+      nextMock = jest.fn()
+
+      BookController.updateBook(reqMock, resMock, nextMock)
+
+      expect(nextMock)
+        .toHaveBeenCalledTimes(1)
+      expect(nextMock)
+        .toHaveBeenCalledWith(new BadRequestError('IDs not matching'))
+    })
+
+    test('when setting title to empty, then call next with bad request error', () => {
+      const requestBody = Object.assign({ title: '' })
+      const params = { bookId: 'id' }
+      reqMock.body = requestBody
+      reqMock.params = params
+      nextMock = jest.fn()
+
+      BookController.updateBook(reqMock, resMock, nextMock)
+
+      expect(nextMock)
+        .toHaveBeenCalledTimes(1)
+      expect(nextMock)
+        .toHaveBeenCalledWith(new BadRequestError('Title must be filled'))
+    })
+
+    test('when single property, then update property and return 200 with saved book', () => {
+      expect.assertions(4)
+      const requestBody = Object.assign({ description: 'New Description' })
+      const params = { bookId: 'id' }
+      reqMock.body = requestBody
+      reqMock.params = params
+      resMock.status = jest.fn()
+        .mockReturnThis()
+      resMock.json = jest.fn()
+        .mockReturnThis()
+      //to make sure findOneAndUpdate() is called, making it return a different book than the input
+      mockingoose.Book.toReturn(book2, 'findOneAndUpdate')
+
+      return BookController.updateBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(resMock.status)
+            .toHaveBeenCalledTimes(1)
+          expect(resMock.status)
+            .toHaveBeenCalledWith(200)
+          expect(resMock.json)
+            .toHaveBeenCalledTimes(1)
+          expect(resMock.json)
+            .toHaveBeenCalledWith(
+              expect.objectContaining(
+                Object.assign({ _id: expect.anything() }, book2)))
+        })
+    })
+
+    test('when multiple properties, then update properties and return 200 with saved book', () => {
+      expect.assertions(4)
+      const requestBody = Object.assign({
+        description: 'New Description',
+        title: 'New Title',
+      })
+      const params = { bookId: 'id' }
+      reqMock.body = requestBody
+      reqMock.params = params
+      resMock.status = jest.fn()
+        .mockReturnThis()
+      resMock.json = jest.fn()
+        .mockReturnThis()
+      //to make sure findOneAndUpdate() is called, making it return a different book than the input
+      mockingoose.Book.toReturn(book2, 'findOneAndUpdate')
+
+      return BookController.updateBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(resMock.status)
+            .toHaveBeenCalledTimes(1)
+          expect(resMock.status)
+            .toHaveBeenCalledWith(200)
+          expect(resMock.json)
+            .toHaveBeenCalledTimes(1)
+          expect(resMock.json)
+            .toHaveBeenCalledWith(
+              expect.objectContaining(
+                Object.assign({ _id: expect.anything() }, book2)))
+        })
+    })
+
+    test('when book does not exist, then call next with Not Found error', () => {
+      expect.assertions(2)
+      const requestBody = Object.assign({ description: 'New Description' })
+      const params = { bookId: 'id' }
+      reqMock.body = requestBody
+      reqMock.params = params
+      nextMock = jest.fn()
+      mockingoose.Book.toReturn(null, 'findOneAndUpdate')
+
+      return BookController.updateBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new NotFoundError('id'))
+        })
+    })
+
+    test('when new title already exists, then call next with ConflictError with unique field name', () => {
+      const params = { bookId: 'id' }
+      reqMock.params = params
+      reqMock.body = { title: 'already exists' }
+      nextMock = jest.fn()
+      const expectedError = new Error('My Error')
+      expectedError.code = 11000 // Mongo error code for duplication
+      mockingoose.Book.toReturn(expectedError, 'findOneAndUpdate')
+
+      return BookController.updateBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new ConflictError('title'))
+        })
+    })
+
+    test('when bookId is invalid, then call next with Bad Request error', () => {
+      const params = { bookId: 'id' }
+      reqMock.params = params
+      reqMock.body = { title: 'test title' }
+      nextMock = jest.fn()
+      const expectedError = new Error('bla bla Cast to ObjectId failed bla bla')
+      mockingoose.Book.toReturn(expectedError, 'findOneAndUpdate')
+
+      return BookController.updateBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new BadRequestError('ID provided is not valid').invalidId())
+        })
+    })
+
+    test('when error saving, then call next with DatabaseError', () => {
+      const params = { bookId: 'id' }
+      reqMock.params = params
+      reqMock.body = { title: 'already exists' }
+      nextMock = jest.fn()
+      const expectedError = new Error('My Error')
+      mockingoose.Book.toReturn(expectedError, 'findOneAndUpdate')
+
+      return BookController.updateBook(reqMock, resMock, nextMock)
+        .then(() => {
+          expect(nextMock)
+            .toHaveBeenCalledTimes(1)
+          expect(nextMock)
+            .toHaveBeenCalledWith(
+              new DatabaseError(expectedError))
         })
     })
   })

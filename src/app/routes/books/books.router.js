@@ -12,6 +12,7 @@ function createBooksRouter() {
   router
     .route('/:bookId')
     .get(BooksController.findBookById)
+    .put(BooksController.updateBook)
 
   return router
 }

@@ -85,4 +85,28 @@ describe('Books Router', () => {
         done()
       })
   })
+
+  test('PUT /{bookId} calls and returns BooksController.udpateBook', (done) => {
+    functionMock = jest.fn()
+      .mockImplementation((req, res) => {
+        res.json(expectedResponse)
+      })
+    BooksController.updateBook = functionMock
+
+    app.use('/', BooksRouter())
+
+    request(app)
+      .put('/12345')
+      .expect(200)
+      .expect((response) => {
+        expect(functionMock)
+          .toHaveBeenCalledTimes(1)
+        expect(response.body)
+          .toEqual(expect.objectContaining(expectedResponse))
+      })
+      .end((err) => {
+        if (err) done(err)
+        done()
+      })
+  })
 })
